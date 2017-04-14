@@ -33,6 +33,29 @@
 void _capret_foo(void);
 
 #ifdef __mips__
+# ifdef __CHERI_USE_MCT__
+__asm__(
+	".section	\".opd\", \"aw\", @progbits\n"
+	".globl	_capret_foo\n"
+	".type	_capret_foo,@function\n"
+"_capret_foo:\n"
+	".memcap	.L._capret_foo\n"
+	".memcap	_cp\n"
+	".size	_capret_foo, .-_capret_foo\n"
+	".text\n"
+	".align	3\n"
+	".ent	.L._capret_foo\n"
+".L._capret_foo:\n"
+	".frame	$fp,32,$ra\n"
+	".mask 	0x00000000,0\n"
+	".fmask	0x00000000,0\n"
+	"cjr	$c17\n"
+	"nop\n"
+	".end	.L._capret_foo\n"
+"$func_end0:\n"
+	".size	.L._capret_foo, ($func_end0)-.L._capret_foo\n"
+);
+# else
 __asm__(
 	".text\n"
 	".globl	_capret_foo\n"
@@ -49,6 +72,7 @@ __asm__(
 "$func_end0:\n"
 	".size	_capret_foo, ($func_end0)-_capret_foo\n"
 );
+# endif
 #else
 #error This test checks that return addresses are capabilities.
 #endif
